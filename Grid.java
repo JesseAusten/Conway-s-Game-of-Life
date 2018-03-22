@@ -7,6 +7,9 @@ public class Grid{
 	private int size;			// Total number of cells.
 	private boolean[][] grid;	// Holds whether each cell is alive (true) or dead (false).
 	
+	private Stack<Coordinate> nextAlive;	// Holds the cells that have changed from dead to alive.
+	private Stack<Coordinate> nextDead;		// Holds the cells that have changed from alive to dead.
+	
 	public Grid(int length) {
 		this.length = length;
 		size = length * length;
@@ -37,8 +40,19 @@ public class Grid{
 		return false;
 	}
 	
+	public int countAlive() {
+		int count = 0;
+		for (int row = 0; row < length; row++)
+			for (int col = 0; col < length; col++)
+				if (grid[row][col])
+					count++;
+		return count;
+	}
+	
 	// Advances the grid to a new cycle of dead/alive cells.
 	public void grow() {
+		nextAlive = new Stack<Coordinate>();				// Clear the stacks for the next generation.
+		nextDead = new Stack<Coordinate>();
 		boolean[][] checked = new boolean[length][length]; 	// Indicates if a cell has already been pushed to the stack.
 		boolean[][] alive = new boolean[length][length]; 	// Indicates whether or not a cell will be alive after the current cycle.
 		Stack<Coordinate> stack = new Stack<Coordinate>(); 	// This stack holds all the squares that need to be checked.
@@ -76,16 +90,18 @@ public class Grid{
 		while (!stack.empty()) {
 			c = stack.pop();
 			count = countAliveNeighbors(c.row(), c.col());
-			
 			if (grid[c.row()][c.col()]) {				// If the current cell is alive,
-				if (count == 2 || count == 3)			// and it has exactly 2 or 3 neighbors,
-					alive[c.row()][c.col()] = true;		// then the cell becomes alive.
+				if (count == 2 || count == 3) 			// and it has exactly 2 or 3 neighbors,
+					alive[c.row()][c.col()] = true;		// then the cell is still alive.
+				else
+					nextDead.push(new Coordinate(c));	// Otherwise, the cell dies.
 			}
 			else										// If the current cell is dead,
-				if (count == 3)							// and has exactly 3 live neighbors,
-					alive[c.row()][c.col()] = true;		// then the cell becomes alive.
+				if (count == 3)	{						// and has exactly 3 live neighbors,
+					nextAlive.push(new Coordinate(c));	// then the cell becomes alive.
+					alive[c.row()][c.col()] = true;
+				}
 		}
-		
 		// Finally, update the current grid to their new dead/alive states.
 		for (int row = 0; row < length; row++)
 			for (int col = 0; col < length; col++)
@@ -122,52 +138,36 @@ public class Grid{
 	
 	
 	
-	/*
-	public Iterator<Coordinate> iterator() {
-		return new GridIterator();
+	
+	public Iterator<Coordinate> iterator(boolean isAlive) {
+		return new GridIterator(isAlive);
 	}
 	
-	// Iterates over the grid, returning the next live cell's coordinate.
-	// If there is not a live cell after the current one, hasNext will return false;
+	// Iterates over one of the two stacks holding the cells that have changed from
+	// either dead->alive or alive->dead. Any cells that remained the same from the
+	// last generation are not in the stacks.
 	private class GridIterator implements Iterator<Coordinate> {
 
-		private int nextRow;	// Row of the next live cell.
-		private int nextCol;	// Column of the next live cell.
+		private boolean isAlive;	// If this is true, the iterator will use the nextAlive stack.
+									// Otherwise, it will use the nextDead stack.
 		
-		// Initializes nextRow and nextCol to the first live cell.
-		// If there is none, sets both to -1.
-		public GridIterator() {
-			nextRow = -1;
-			nextCol = -1;
-			boolean found = false;
-			for (int row = 0; row < length && !found; row++)
-				for (int col = 0; col < length; col++)
-					if (grid[row][col]) {
-						nextRow = row;
-						nextCol = col;
-						found = true;
-						break;
-					}
+		public GridIterator(boolean isAlive) {
+			this.isAlive = isAlive;
 		}
 		
-		// Returns true if there is another live cell after the current one.
+		// Returns true if there is an element in the given stack.
 		public boolean hasNext() {
-			return (nextRow != -1);
+			if (isAlive)
+				return (!nextAlive.isEmpty());
+			return (!nextDead.isEmpty());
 		}
 
-		// Returns the coordinates of the current live cell.
-		// If there isn't another one after the current, nextRow is set to -1.
-		// Otherwise, nextRow and nextCol are set to the next live cell.
+		// Returns the next coordinate of the given stack.
 		public Coordinate next() {
-			Coordinate c = new Coordinate(nextRow, nextCol);
-			nextRow = -1;
-			for (int row = nextRow-1; row < length; row++)
-				for (int col = nextCol-1; col < length; col++)
-					if (grid[row][col]) {
-						nextRow = row;
-						nextCol = col;
-					}
-			return c;
+			if (isAlive)
+				return nextAlive.pop();
+			else
+				return nextDead.pop();
 		}
-	}*/
+	}
 }

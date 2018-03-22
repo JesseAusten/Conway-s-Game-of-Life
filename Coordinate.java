@@ -8,6 +8,11 @@ public class Coordinate {
 		this.col = col;
 	}
 	
+	public Coordinate(Coordinate c) {
+		row = c.row();
+		col = c.col();
+	}
+	
 	public void setRow(int row) {
 		this.row = row;
 	}
@@ -22,5 +27,9 @@ public class Coordinate {
 	
 	public int col() {
 		return col;
+	}
+	
+	public String toString() {
+		return "(" + row + ", " + col + ")"; 
 	}
 }
