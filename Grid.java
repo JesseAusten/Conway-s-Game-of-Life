@@ -1,10 +1,10 @@
 import java.util.Iterator;
 import java.util.Stack;
 
+// Grid holds the data for the game, including which cells are dead and alive.
 public class Grid{
 
 	private int length;			// Length of one side of the grid.
-	private int size;			// Total number of cells.
 	private boolean[][] grid;	// Holds whether each cell is alive (true) or dead (false).
 	
 	private Stack<Coordinate> nextAlive;	// Holds the cells that have changed from dead to alive.
@@ -12,10 +12,11 @@ public class Grid{
 	
 	public Grid(int length) {
 		this.length = length;
-		size = length * length;
 		grid = new boolean[length][length];
+		nextAlive = new Stack<Coordinate>();
+		nextDead = new Stack<Coordinate>();
 		
-		// Initializes the grid to be dead.
+		// Initialize the grid to be dead.
 		for (int row = 0; row < length; row++)
 			for (int col = 0; col < length; col++)
 				grid[row][col] = false;
@@ -40,6 +41,7 @@ public class Grid{
 		return false;
 	}
 	
+	// Returns the number of live cells.
 	public int countAlive() {
 		int count = 0;
 		for (int row = 0; row < length; row++)
@@ -130,15 +132,8 @@ public class Grid{
 		
 		return count;
 	}
-
 	
-	
-	
-	
-	
-	
-	
-	
+	// Returns the iterator for the stack of cells that either go from dead->alive or alive->dead.
 	public Iterator<Coordinate> iterator(boolean isAlive) {
 		return new GridIterator(isAlive);
 	}

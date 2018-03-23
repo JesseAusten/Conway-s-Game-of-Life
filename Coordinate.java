@@ -1,4 +1,4 @@
-
+// Coordinate contains a row and column
 public class Coordinate {
 	private int row;
 	private int col;
@@ -8,6 +8,7 @@ public class Coordinate {
 		this.col = col;
 	}
 	
+	// Copies another coordinate to this one.
 	public Coordinate(Coordinate c) {
 		row = c.row();
 		col = c.col();
@@ -29,6 +30,7 @@ public class Coordinate {
 		return col;
 	}
 	
+	// Format: (row, col)
 	public String toString() {
 		return "(" + row + ", " + col + ")"; 
 	}
