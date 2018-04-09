@@ -111,7 +111,7 @@ public class Grid{
 	}
 	
 	// Returns true if the cell exists on the grid, bounded by the length.
-	private boolean isValid(int row, int col) {
+	public boolean isValid(int row, int col) {
 		return (row >= 0 && row < length && col >= 0 && col < length);
 	}
 	

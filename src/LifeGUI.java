@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
+import javax.swing.BorderFactory;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -17,6 +18,8 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+
+import patterns.*;
 
 // LifeGUI is the GUI for the game. It contains the instance of LifeGame so it can update the games grid when needed.
 public class LifeGUI extends JFrame implements ActionListener, ChangeListener, MouseListener {
@@ -27,6 +30,7 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 	private JButton reset;
 	
 	private LifeGame game;
+	private Pattern currentPattern = null;
 	private int length;
 	private boolean isMouseDown = false;
 	
@@ -39,6 +43,7 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(getButtonPanel());						// Add the button panel containing all the cells.
 		mainPanel.add(getBottomMenuPanel(), BorderLayout.SOUTH);// Add the menu at the bottom.
+		mainPanel.add(getRightMenuPanel(), BorderLayout.EAST);	// Add the pattern menu to the right.
 		add(mainPanel);											// Attach the main panel to the JFrame.
 		
 		setTitle("Conway's Game of Life");
@@ -70,23 +75,46 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 	
 	// Sets the cell to swap from dead<->alive.
 	private void setCell(String cell) {
-		String[] commands = cell.split(" ");		// Get the command for the button "row col"
+		String[] commands = cell.split(" ");			// Get the command for the button "row col"
 		int row = Integer.parseInt(commands[0]);
 		int col = Integer.parseInt(commands[1]);
-		if (!game.getCell(row, col)) {				// If the cell is dead, switch it to alive.
-			setColor(row, col, Color.BLACK);		// Set the color on the board,
-			game.setCell(row, col, true);			// and set the cell in the game's grid.
+		
+
+		// If the current selected pattern is not none (null), place it on the board.
+		if (currentPattern != null) {
+			for (int r = row; r < (row + currentPattern.getHeight()); r++)
+				for (int c = col; c < (col + currentPattern.getWidth()); c++)
+					if (game.isValid(r, c)) {			// Clear the area that the pattern will fill.
+						setColor(r, c, Color.WHITE);		
+						game.setCell(r, c, false);
+					}
+			
+			for (int i = 0; i < currentPattern.getCoords().size(); i++) {
+				int r = row + currentPattern.getCoords().get(i).row();
+				int c = col + currentPattern.getCoords().get(i).col();
+				if (game.isValid(r, c)) {				// Draw the pattern onto the selected area.
+					setColor(r, c, Color.BLACK);		
+					game.setCell(r, c, true);
+				}
+			}
 		}
-		else {										// Otherwise, switch the cell from alive to dead.
-			setColor(row, col, Color.WHITE);		
-			game.setCell(row, col, false);
+		// Otherwise no pattern is selected, so switch the current cell.
+		else {
+			if (!game.getCell(row, col)) {				// If the cell is dead, switch it to alive.
+				setColor(row, col, Color.BLACK);		// Set the color on the board,
+				game.setCell(row, col, true);			// and set the cell in the game's grid.
+			}
+			else {										// Otherwise, switch the cell from alive to dead.
+				setColor(row, col, Color.WHITE);		
+				game.setCell(row, col, false);
+			}
 		}
 	}
 	
 	// Sets the cell to be alive or dead based on the passed in boolean.
 	private void setCell(String cell, boolean alive) {
 		String[] commands = cell.split(" ");		// Get the command for the button "row col"
-		int row = Integer.parseInt(commands[0]);
+		int row = Integer.parseInt(commands[0]);	
 		int col = Integer.parseInt(commands[1]);
 		setColor(row, col, Color.BLACK);			// Set the color on the board,
 		game.setCell(row, col, alive);				// and set the cell in the game's grid.
@@ -153,8 +181,74 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 		return panel;
 	}
 	
+	private JPanel getRightMenuPanel() {
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout(0, 0));
+		
+		// Grid goes inside of the panel (rows, columns).
+		JPanel grid = new JPanel(new GridLayout(18, 1));
+		
+		// Label goes inside of the panel, before grid.
+		JLabel label = new JLabel("  Select a Pattern");
+		label.setBorder(BorderFactory.createLineBorder(Color.BLACK, 2, true));
+		
+		// No Pattern Selected button.
+		JButton none = new JButton("None");
+		none.setActionCommand("patternNone");
+		none.addActionListener(this);
+		
+		// RPentomino pattern.
+		JButton rpentomino = new JButton("R-Pentomino");
+		rpentomino.setActionCommand("patternRPentomino");
+		rpentomino.addActionListener(this);
+		
+		// Glider pattern.
+		JButton glider = new JButton("Glider");
+		glider.setActionCommand("patternGlider");
+		glider.addActionListener(this);
+		
+		// Glider Gun pattern.
+		JButton gliderGun = new JButton("Glider Gun");
+		gliderGun.setActionCommand("patternGliderGun");
+		gliderGun.addActionListener(this);
+				
+		// Acorn pattern.
+		JButton acorn = new JButton("Acorn");
+		acorn.setActionCommand("patternAcorn");
+		acorn.addActionListener(this);
+		
+		// Glider Gun pattern.
+		JButton diehard = new JButton("Diehard");
+		diehard.setActionCommand("patternDiehard");
+		diehard.addActionListener(this);
+
+		// Diamond pattern.
+		JButton diamond = new JButton("Diamond");
+		diamond.setActionCommand("patternDiamond");
+		diamond.addActionListener(this);
+		
+		// Diamond pattern.
+		JButton squares = new JButton("Squares");
+		squares.setActionCommand("patternSquares");
+		squares.addActionListener(this);
+				
+		// Add the label and buttons to the panel.
+		grid.add(none);
+		grid.add(rpentomino);
+		grid.add(glider);
+		grid.add(gliderGun);
+		grid.add(acorn);
+		grid.add(diehard);		
+		grid.add(diamond);	
+		grid.add(squares);
+		panel.add(label, BorderLayout.NORTH);
+		panel.add(grid, BorderLayout.CENTER);
+		return panel;
+	}
+	
 	// This function runs when a button in the menu is pressed.
 	// It will Pause/Resume, Restart, and switch a cell.
+	// It also controls what pattern is selected.
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		if (e.getActionCommand() == "start") {			// Start / Pause button pressed.
@@ -170,6 +264,22 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 			game.resetGame();
 			resetBoard();
 		}
+		else if (e.getActionCommand() == "patternNone")			// Set Pattern to null (none).
+			currentPattern = null;
+		else if (e.getActionCommand() == "patternRPentomino")	// Set Pattern to RPentomino.
+			currentPattern = new RPentomino();
+		else if (e.getActionCommand() == "patternGlider")		// Set Pattern to Glider.
+			currentPattern = new Glider();
+		else if (e.getActionCommand() == "patternGliderGun")	// Set Pattern to GliderGun.
+			currentPattern = new GliderGun();
+		else if (e.getActionCommand() == "patternAcorn")		// Set Pattern to Acorn.
+			currentPattern = new Acorn();
+		else if (e.getActionCommand() == "patternDiehard")		// Set Pattern to Diehard.
+			currentPattern = new Diehard();
+		else if (e.getActionCommand() == "patternDiamond")		// Set Pattern to Diamond.
+			currentPattern = new Diamond();
+		else if (e.getActionCommand() == "patternSquares")		// Set Pattern to Squares.
+			currentPattern = new Squares();
 	}
 
 	// Sets the interval between cycles based on the JSlider.
@@ -178,7 +288,8 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 		JSlider source = (JSlider) e.getSource();
 		if (source.getValueIsAdjusting())			// Do nothing if the slider is in motion.
 			return;
-		game.setInterval((int) (source.getValue() * source.getValue() / 15 + 50));	// Set the interval min:50 to max:716.
+		int val = (int) 100 - source.getValue();
+		game.setInterval(val * val / 15 + 50);	// Set the interval min:50 to max:716.
 	}
 
 	@Override

@@ -32,7 +32,7 @@ public class LifeGame {
 		return grid.isGridAlive();
 	}
 	
-	// Pause or unpause the game.
+	// Pause or resume the game.
 	public void pause() {
 		pause = !pause;
 		go = !go;
@@ -61,6 +61,10 @@ public class LifeGame {
 	// Get the time between each growth cycle.
 	public int getInterval() {
 		return interval;
+	}
+	
+	public boolean isValid(int row, int col) {
+		return grid.isValid(row, col);
 	}
 	
 	// Advances the cycle by one turn.
