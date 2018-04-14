@@ -28,6 +28,7 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 	private JButton[][] buttons;
 	private JButton start;
 	private JButton reset;
+	private JButton step;
 	
 	private LifeGame game;
 	private Pattern currentPattern = null;
@@ -155,6 +156,11 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 		reset.addActionListener(this);
 		reset.setActionCommand("reset");
 		
+		// Step button. Action command: "step"
+		step = new JButton("Step");
+		step.addActionListener(this);
+		step.setActionCommand("step");
+				
 		// Speed slider. Name: "speed"
 		JSlider slider = new JSlider(0, 100, 50);
 		slider.setMajorTickSpacing(20);
@@ -177,6 +183,7 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 		// Add components to the panel and return it.
 		panel.add(start);
 		panel.add(reset);
+		panel.add(step);
 		panel.add(slidePanel);
 		return panel;
 	}
@@ -263,6 +270,15 @@ public class LifeGUI extends JFrame implements ActionListener, ChangeListener, M
 			start.setText("Start Life");
 			game.resetGame();
 			resetBoard();
+		}
+		else if (e.getActionCommand() == "step") {
+			if (!game.isPaused()) {
+				game.pause();	
+				start.setText("Start Life");
+			}
+			game.pause();
+			game.grow();
+			game.pause();
 		}
 		else if (e.getActionCommand() == "patternNone")			// Set Pattern to null (none).
 			currentPattern = null;
